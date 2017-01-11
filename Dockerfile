@@ -11,7 +11,7 @@ RUN apt-get install -y --no-install-recommends \
     python \
     python-dev \
     python-pip \
-	git
+    git
 
 # Install gcc compiler
 RUN apt-get install -y --no-install-recommends \
@@ -42,5 +42,13 @@ RUN pip install --no-cache-dir git+https://github.com/scipy/scipy.git
 # Initiate python
 CMD ["/usr/bin/python"]
 
-# TODO cleanup unneeded compiler packages
-#RUN apt-get clean && rm -rf /var/lib/apt/lists/
+# Cleanup apt-cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/
+
+# TODO Cleanup unneeded compiler packages
+# RUN apt-get purge -y \
+#    g++
+#    gfortran \
+#    libblas-dev \
+#    liblapack-dev \
+#    cython
