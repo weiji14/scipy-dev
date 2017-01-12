@@ -43,11 +43,7 @@ RUN apt-get -qq update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
 
 # Initiate python
-#CMD ["/usr/bin/python"]
-#ENTRYPOINT ["python"]
 CMD ["python"]
 
-# Test command
-# docker run --rm scipy-dev python -c "from scipy.spatial.distance import directed_hausdorff; import numpy as np; u = np.array([(1.0, 0.0),(0.0, 1.0),(-1.0, 0.0),(0.0,-1.0)]); v = np.array([(2.0, 0.0),(0.0, 2.0),(-2.0, 0.0),(0.0, -4.0)]); print directed_hausdorff(u, v);"
-# Powershell remove old images
-# docker images -f "dangling=true" -q | %{docker rmi -f $_}
+# Test command (should return (2.23606797749979, 3, 0))
+# docker run --rm weiji14/scipy-dev python -c "from scipy.spatial.distance import directed_hausdorff; import numpy as np; u = np.array([(1.0, 0.0),(0.0, 1.0),(-1.0, 0.0),(0.0,-1.0)]); v = np.array([(2.0, 0.0),(0.0, 2.0),(-2.0, 0.0),(0.0, -4.0)]); print directed_hausdorff(u, v);"
