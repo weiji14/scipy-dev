@@ -3,52 +3,51 @@ MAINTAINER Wei Ji Leong <weiji@e-spatial.co.nz>
 
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 
-# Update repos
-RUN apt-get update
-
-# Install python, pip and git
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get -qq update && apt-get install -y --no-install-recommends \
+    # Install python, pip, git
     python \
     python-dev \
     python-pip \
-    git
-
-# Install gcc compiler
-RUN apt-get install -y --no-install-recommends \
-    gcc
-
-# Fix: InsecurePlatformWarning
-# http://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning
-RUN apt-get install -y --no-install-recommends \
-    libffi-dev \
-    libssl-dev \
-    && pip install setuptools \
-    && pip install --no-cache-dir ndg-httpsclient
-
-# Install numpy and scipy from pip
-RUN pip install --no-cache-dir numpy scipy
-
-# Install packages needed to compile scipy from source
-RUN apt-get install -y --no-install-recommends \
+    git \
+    
+    # Install packages needed to compile scipy from source
+    gcc \
     g++ \
     gfortran \
     libblas-dev \
     liblapack-dev \
-    cython
-
-# Build latest scipy from git (currently 0.19)
-RUN pip install --no-cache-dir git+https://github.com/scipy/scipy.git
+    cython \
+    
+    # Fix InsecurePlatformWarning http://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning
+    libffi-dev \
+    libssl-dev \
+    
+    # Install setuptools, numpy and scipy from pip
+    && pip install --no-cache-dir setuptools numpy scipy \
+    
+    # Build latest scipy from git (currently 0.19)
+    && pip install --no-cache-dir git+https://github.com/scipy/scipy.git \
+    
+    # Remove compiler and miscellaneous development packages
+    && apt-get remove -y \
+    python-dev python-pip git gcc g++ gfortran libblas-dev liblapack-dev cython libffi-dev libssl-dev \
+    
+    # Penultimate purge
+    && apt-get autoremove -y \
+    
+    # Reinstall some scipy needed libraries
+    && apt-get install -y --no-install-recommends \
+    liblapack3 \
+    
+    # Cleanup apt cache
+    && rm -rf /var/lib/apt/lists/* \
 
 # Initiate python
-CMD ["/usr/bin/python"]
+#CMD ["/usr/bin/python"]
+#ENTRYPOINT ["python"]
+CMD ["python"]
 
-# Cleanup apt-cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/
-
-# TODO Cleanup unneeded compiler packages
-# RUN apt-get purge -y \
-#    g++
-#    gfortran \
-#    libblas-dev \
-#    liblapack-dev \
-#    cython
+# Test command
+# docker run --rm scipy-dev python -c "from scipy.spatial.distance import directed_hausdorff; import numpy as np; u = np.array([(1.0, 0.0),(0.0, 1.0),(-1.0, 0.0),(0.0,-1.0)]); v = np.array([(2.0, 0.0),(0.0, 2.0),(-2.0, 0.0),(0.0, -4.0)]); print directed_hausdorff(u, v);"
+# Powershell remove old images
+# docker images -f "dangling=true" -q | %{docker rmi -f $_}
